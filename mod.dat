@@ -1,0 +1,31 @@
+set V;
+set LINKS := {i in V, j in V: i <> j};
+
+param alpha >= 0;
+param d{LINKS} >= 0;
+param b{V} >= 0; #default benefit of visiting a bar
+param c{V} >= 0; # default cost of one drink
+
+param B default 30; # default maximum budget for drinks
+
+var x{LINKS} binary;
+
+var y{j in V} binary;
+
+maximize benefit_minus_distance:
+sum{j in V} b[j]*y[j] - alpha*sum{(i,j) in LINKS} d[i,j]*x[i,j];
+
+subject to exit{i in V}:
+sum{(i,j) in LINKS} x[i,j] - y[i] = 0;
+
+subject to enter{j in V}:
+sum{(i,j) in LINKS} x[i,j] - y[j] = 0;
+
+subject to budget:
+sum{j in V} c[j]*y[j] <= B;
+
+subject to two_cycles{(i,j) in LINKS}:
+x[i,j] + x[j,i] <= 1;
+
+subject to three_cycles{(i,j) in LINKS, k in V: i <> k and j <> k}:
+x[i,j] + x[j,k] + x[k,i] <= 2;
